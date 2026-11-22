@@ -8,6 +8,7 @@ class Client(PublicAPI, PrivateAPI):
         self.api_key = api_key
         self.secret_key = secret_key
         self.http = MyHTTPClient(retries=retries, rate_limit=rate_limit, timeout=timeout)
+        self.http = MyHTTPClient(user_agent=user_agent)
 
     def _check_status(self, resp):
         if resp.status_code != 200:
