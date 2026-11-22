@@ -63,3 +63,29 @@ client = Client(
     user_agent="indodax-py/1.0" # Custom User-Agent
 )
 ```
+
+## 🛠️ Architecture & Design Choices
+
+<table>
+  <tr>
+    <td><b>Component</b></td>
+    <td><b>Implementation</b></td>
+    <td><b>Reasoning</b></td>
+  </tr>
+  <tr>
+    <td><b>HTTP Layer</b></td>
+    <td>Custom <code>MyHTTPClient</code> (requests + urllib3)</td>
+    <td>Provides myhttp-like resilience without external heavy dependencies.</td>
+  </tr>
+  <tr>
+    <td><b>Data Models</b></td>
+    <td><code>@dataclass</code> with string-based numbers</td>
+    <td>Prevents Python's float inaccuracies from affecting exchange math.</td>
+  </tr>
+  <tr>
+    <td><b>Security</b></td>
+    <td>No Withdrawal endpoints provided</td>
+    <td>Security by design. Limits blast radius if API keys are compromised.</td>
+  </tr>
+</table>
+
