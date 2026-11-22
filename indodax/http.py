@@ -14,12 +14,12 @@ class MyHTTPClient:
         self.session = requests.Session()
         self.session.headers.update({"User-Agent": user_agent})
 
-        # Retry Strategy (Sama seperti myhttp Go)
+        # Retry Strategy (Hanya untuk GET dan HEAD, TIDAK untuk POST)
         retry_strategy = Retry(
             total=retries,
             backoff_factor=backoff_factor,
             status_forcelist=[429, 500, 502, 503, 504],
-            allowed_methods=["HEAD", "GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            allowed_methods=["HEAD", "GET", "OPTIONS"], # <--- POST DIHAPUS!
             respect_retry_after_header=True,
             backoff_jitter=0.5
         )
