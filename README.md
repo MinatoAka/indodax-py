@@ -64,6 +64,30 @@ client = Client(
 )
 ```
 
+## 📂 Project Structure
+
+```text
+indodax-py/
+├── indodax/               # Main package
+│   ├── __init__.py        # Public exports (Client, Models, Exceptions)
+│   ├── client.py          # Main entry point (Mixin combiner)
+│   ├── public.py          # Public endpoints (Ticker, Pairs)
+│   ├── private.py         # Private endpoints (Balances, Orders, Trades)
+│   ├── models.py          # Dataclasses (OrderResult, BalanceResult, etc.)
+│   ├── exceptions.py      # Typed API errors (IndodaxError)
+│   ├── http.py            # HTTP layer (MyHTTPClient with retry & rate limit)
+│   └── crypto.py          # Cryptography (HMAC-SHA256 signing)
+├── tests/                 # Unit tests (pytest + requests-mock)
+│   └── test_client.py
+├── pyproject.toml         # Build & dependencies config
+└── README.md
+```
+
+### Design Philosophy
+
+* Separation of Concerns: HTTP, Crypto, and API Endpoints are strictly separated into distinct files. No monolithic spaghetti code.
+* Mixin Architecture: PublicAPI and PrivateAPI are mixed into the main Client, keeping endpoints organized without relying on inheritance bloat.
+
 ## 🛠️ Architecture & Design Choices
 
 <table>
