@@ -6,6 +6,8 @@ from urllib3.util.retry import Retry
 
 class MyHTTPClient:
     def __init__(self, retries=3, backoff_factor=1.0, rate_limit=5, timeout=15, user_agent="indodax-py/1.0"):
+        if rate_limit <= 0:
+            rate_limit = 5
         self.timeout = timeout
         self.rate_limit_interval = 1.0 / rate_limit
         self.last_request_time = 0.0
