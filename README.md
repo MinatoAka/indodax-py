@@ -113,6 +113,13 @@ indodax-py/
   </tr>
 </table>
 
+
+## 🕵️ Reference
+
+* [Standalone Library Go Indodax API](https://github.com/MinatoAka/indodax-go)
+* [Indodax Official Api Docs](https://github.com/btcid/indodax-official-api-docs)
+
+
 ## 🤝 Support & Exchange
 
 If this library helps you build profitable bots, consider supporting the development!
