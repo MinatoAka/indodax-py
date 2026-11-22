@@ -69,7 +69,14 @@ class PrivateAPI:
         self._check_status(resp)
         
         data = resp.json()
-        return OrderResult(**data)
+        return OrderResult(
+            symbol=data.get("symbol", ""),
+            order_id=data.get("orderId", 0),
+            client_order_id=data.get("clientOrderId"),
+            side=data.get("side"),
+            type=data.get("type"),
+            full_order_id=data.get("fullOrderId")
+        )
 
     def place_market_buy(self, pair: str, idr_amount: float) -> OrderResult:
         return self.submit_order(SubmitOrderRequest(
@@ -111,4 +118,20 @@ class PrivateAPI:
         self._check_status(resp)
         
         data = resp.json().get("data", [])
-        return [Trade(**t) for t in data]
+        trades = []
+        for t in data:
+            trades.append(Trade(
+                trade_id=t.get("tradeId", ""),
+                order_id=t.get("orderId", ""),
+                client_order_id=t.get("clientOrderId", ""),
+                symbol=t.get("symbol", ""),
+                price=t.get("price", "0"),
+                qty=t.get("qty", "0"),
+                quote_qty=t.get("quoteQty", "0"),
+                commission=t.get("commission", "0"),
+                commission_asset=t.get("commissionAsset", ""),
+                is_buyer=t.get("isBuyer", False),
+                is_maker=t.get("isMaker", False),
+                time=t.get("time", 0)
+            ))
+        return trades
