@@ -89,3 +89,9 @@ client = Client(
   </tr>
 </table>
 
+## 🤝 Support & Exchange
+
+If this library helps you build profitable bots, consider supporting the development!
+
+👉 [Daftar Akun Indodax](https://indodax.com/deeplink?page=register&id=AkaKen) (Referral)
+👉 [Traktir Kopi](https://saweria.co/AKaAturDompet) ☕
