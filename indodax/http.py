@@ -14,12 +14,12 @@ class MyHTTPClient:
         self.session = requests.Session()
         self.session.headers.update({"User-Agent": user_agent})
 
-        # Retry Strategy (Hanya untuk GET dan HEAD, TIDAK untuk POST)
+        # HARDCODE: POST TIDAK PERNAH DI-RETRY demi keamanan
         retry_strategy = Retry(
             total=retries,
             backoff_factor=backoff_factor,
             status_forcelist=[429, 500, 502, 503, 504],
-            allowed_methods=["HEAD", "GET", "OPTIONS"], # <--- POST DIHAPUS!
+            allowed_methods=["HEAD", "GET", "OPTIONS"], # <-- Hanya method aman
             respect_retry_after_header=True,
             backoff_jitter=0.5
         )
