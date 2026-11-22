@@ -10,7 +10,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 [![Tests](https://img.shields.io/github/actions/workflow/status/MinatoAka/indodax-py/ci.yml?branch=main&label=Tests&style=for-the-badge&logo=github)](https://github.com/MinatoAka/indodax-py/actions)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge)](https://github.com/MinatoAka/indodax-py/pulls)
-
+[![Support via Saweria](https://img.shields.io/badge/Saweria-Support%20me-orange)](https://saweria.co/AKaAturDompet)
 </div>
 
 ---
