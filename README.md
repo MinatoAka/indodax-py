@@ -93,5 +93,5 @@ client = Client(
 
 If this library helps you build profitable bots, consider supporting the development!
 
-> 👉 [Daftar Akun Indodax](https://indodax.com/deeplink?page=register&id=AkaKen) (Referral)
-> 👉 [Traktir Kopi](https://saweria.co/AKaAturDompet) ☕
+* 👉 [Daftar Akun Indodax](https://indodax.com/deeplink?page=register&id=AkaKen) (Referral)
+* 👉 [Traktir Kopi](https://saweria.co/AKaAturDompet) ☕
