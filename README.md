@@ -33,3 +33,33 @@ Since the library is currently hosted on GitHub, install it directly via `pip`:
 ```bash
 pip install git+https://github.com/MinatoAka/indodax-py.git
 ```
+
+## 🚀 Quick Start
+
+### 1. Initialize Client
+
+Security best practice: **Never hardcode your credentials**. Use environment variables (e.g., from a `.env` file).
+
+```python
+import os
+from indodax import Client
+
+# 1. Load credentials from environment variables
+API_KEY = os.getenv("INDODAX_API_KEY")
+SECRET_KEY = os.getenv("INDODAX_SECRET_KEY")
+
+if not API_KEY or not SECRET_KEY:
+    raise ValueError("API credentials not found in environment variables!")
+
+# 2. Initialize Client (customizable parameters)
+client = Client(
+    api_key=API_KEY, 
+    secret_key=SECRET_KEY,
+    
+    # Optional parameters (defaults shown below):
+    retries=3,                  # Auto-retry for GET requests on rate-limit/5xx
+    rate_limit=5,               # Max 5 requests per second (anti-spam)
+    timeout=15,                 # Request timeout in seconds
+    user_agent="indodax-py/1.0" # Custom User-Agent
+)
+```
