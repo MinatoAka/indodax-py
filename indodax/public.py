@@ -1,6 +1,6 @@
 import urllib.parse
 from typing import List
-from .models import TickerResponse, TickerData, PairInfo  # <-- Tambah TickerData
+from .models import TickerResponse, TickerData, PairInfo
 
 class PublicAPI:
     BASE_URL_PUBLIC = "https://indodax.com"
