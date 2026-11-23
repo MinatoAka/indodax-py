@@ -36,15 +36,40 @@ pip install git+https://github.com/MinatoAka/indodax-py.git
 
 ## 🚀 Quick Start
 
-### 1. Initialize Client
+### 1. Read Public Market Data
 
-Security best practice: **Never hardcode your credentials**. Use environment variables (e.g., from a `.env` file).
+Public endpoints do not require API credentials:
+
+```python
+from indodax import Client
+
+client = Client()
+
+# Get a ticker
+ticker = client.get_ticker("ethidr")
+
+print("Last:", ticker.ticker.last)
+print("Buy:", ticker.get_highest_bid())
+print("Sell:", ticker.get_lowest_ask())
+print("24h high:", ticker.get_day_high())
+print("24h low:", ticker.get_day_low())
+
+# List available pairs
+pairs = client.get_pairs()
+for pair in pairs:
+    print(pair.id, "min_qty=", pair.min_qty)
+```
+
+`Client()` can be used without credentials for `get_ticker()` and `get_pairs()`.
+
+### 2. Initialize the Private API
+
+Private endpoints require API credentials. Security best practice: **never hardcode credentials**. Load them from environment variables instead.
 
 ```python
 import os
 from indodax import Client
 
-# Load credentials from environment variables
 API_KEY = os.getenv("INDODAX_API_KEY")
 SECRET_KEY = os.getenv("INDODAX_SECRET_KEY")
 
@@ -61,30 +86,6 @@ client = Client(
     timeout=15,
     user_agent="indodax-py/1.0",
 )
-```
-
-### 2. Read Public Market Data
-
-Public endpoints do not require API credentials:
-
-```python
-from indodax import Client
-
-client = Client(api_key="", secret_key="")
-
-# Get a ticker
-ticker = client.get_ticker("ethidr")
-
-print("Last:", ticker.ticker.last)
-print("Buy:", ticker.get_highest_bid())
-print("Sell:", ticker.get_lowest_ask())
-print("24h high:", ticker.get_day_high())
-print("24h low:", ticker.get_day_low())
-
-# List available pairs
-pairs = client.get_pairs()
-for pair in pairs:
-    print(pair.id, "min_qty=", pair.min_qty)
 ```
 
 ### 3. Check Balances
@@ -136,7 +137,6 @@ trade_history = client.trade_history(
 for trade in trade_history:
     print(
         trade.trade_id,
-        trade.side if hasattr(trade, "side") else "",
         trade.price,
         trade.qty,
         trade.commission,
