@@ -43,7 +43,13 @@ Public endpoints do not require API credentials:
 ```python
 from indodax import Client
 
-client = Client()
+client = Client(
+    # Optional parameters (defaults shown below):
+    retries=3,
+    rate_limit=5,
+    timeout=15,
+    user_agent="indodax-py/1.0",
+)
 
 # Get a ticker
 ticker = client.get_ticker("ethidr")
