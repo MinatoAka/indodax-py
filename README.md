@@ -44,24 +44,123 @@ Security best practice: **Never hardcode your credentials**. Use environment var
 import os
 from indodax import Client
 
-# 1. Load credentials from environment variables
+# Load credentials from environment variables
 API_KEY = os.getenv("INDODAX_API_KEY")
 SECRET_KEY = os.getenv("INDODAX_SECRET_KEY")
 
 if not API_KEY or not SECRET_KEY:
     raise ValueError("API credentials not found in environment variables!")
 
-# 2. Initialize Client (customizable parameters)
 client = Client(
-    api_key=API_KEY, 
+    api_key=API_KEY,
     secret_key=SECRET_KEY,
-    
+
     # Optional parameters (defaults shown below):
-    retries=3,                  # Auto-retry for GET requests on rate-limit/5xx
-    rate_limit=5,               # Max 5 requests per second (anti-spam)
-    timeout=15,                 # Request timeout in seconds
-    user_agent="indodax-py/1.0" # Custom User-Agent
+    retries=3,
+    rate_limit=5,
+    timeout=15,
+    user_agent="indodax-py/1.0",
 )
+```
+
+### 2. Read Public Market Data
+
+Public endpoints do not require API credentials:
+
+```python
+from indodax import Client
+
+client = Client(api_key="", secret_key="")
+
+# Get a ticker
+ticker = client.get_ticker("ethidr")
+
+print("Last:", ticker.ticker.last)
+print("Buy:", ticker.get_highest_bid())
+print("Sell:", ticker.get_lowest_ask())
+print("24h high:", ticker.get_day_high())
+print("24h low:", ticker.get_day_low())
+
+# List available pairs
+pairs = client.get_pairs()
+for pair in pairs:
+    print(pair.id, "min_qty=", pair.min_qty)
+```
+
+### 3. Check Balances
+
+```python
+balances = client.get_balances("ethidr")
+
+print("IDR balance:", balances.idr)
+print("ETH balance:", balances.asset)
+print("ETH balance (raw):", balances.asset_raw)
+```
+
+`asset_raw` preserves the exchange's original string value, so it is suitable for calculations that require no precision loss.
+
+### 4. Submit Market Orders
+
+> **Market orders execute immediately.** Run only after validating balances and trading requirements.
+
+```python
+# Buy ETH using 100,000 IDR
+buy_order = client.place_market_buy("ethidr", 100_000.00)
+
+print("Buy order ID:", buy_order.order_id)
+print("Full order ID:", buy_order.full_order_id)
+
+# Sell 0.00030391 ETH
+sell_order = client.place_market_sell(
+    "ethidr",
+    "0.00030391",
+)
+
+print("Sell order ID:", sell_order.order_id)
+```
+
+Market buy amounts are formatted as a two-decimal string internally. Market sell quantities should be passed as a string to preserve precision.
+
+### 5. Get Trade History
+
+```python
+from indodax import TradeHistoryRequest
+
+trade_history = client.trade_history(
+    TradeHistoryRequest(
+        symbol="ETHIDR",
+        limit=20,
+    )
+)
+
+for trade in trade_history:
+    print(
+        trade.trade_id,
+        trade.side if hasattr(trade, "side") else "",
+        trade.price,
+        trade.qty,
+        trade.commission,
+    )
+```
+
+### 6. Handle API Errors
+
+```python
+from indodax import IndodaxError
+
+try:
+    balances = client.get_balances("ethidr")
+except IndodaxError as error:
+    if error.is_invalid_signature():
+        print("Invalid API signature. Check your secret key.")
+    elif error.is_invalid_credentials():
+        print("Invalid API credentials.")
+    elif error.is_rate_limit():
+        print("Rate limit reached. Please wait before retrying.")
+    elif error.is_insufficient_balance():
+        print("Insufficient balance.")
+    else:
+        print(error)
 ```
 
 ## 📂 Project Structure
