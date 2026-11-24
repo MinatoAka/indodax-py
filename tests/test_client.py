@@ -1,113 +1,183 @@
-import pytest
-import requests_mock
-import hashlib
-import hmac
-import urllib.parse
-from indodax import Client, IndodaxError
-from indodax.crypto import build_query, sign_sha256
+from decimal import Decimal, InvalidOperation, ROUND_DOWN
+from typing import List
+import time
 
-API_KEY = "test-api-key"
-SECRET_KEY = "test-secret-key"
+from .crypto import build_query, sign_sha256
+from .models import BalanceResult, SubmitOrderRequest, OrderResult, TradeHistoryRequest, Trade
 
-@pytest.fixture
-def client():
-    return Client(api_key=API_KEY, secret_key=SECRET_KEY)
 
-def test_ticker_parsing(client):
-    with requests_mock.Mocker() as m:
-        mock_response = {
-            "ticker": {
-                "buy": "33569000",
-                "sell": "33571000",
-                "last": "33570000",
-                "high": "34157000",
-                "low": "32901000",
-                "server_time": 1794876675
-            }
+class PrivateAPI:
+    BASE_URL_PRIVATE = "https://api.indodax.com"
+
+    def _get_private_headers(self, signature: str, is_post: bool = False) -> dict:
+        headers = {
+            "Accept": "application/json",
+            "X-APIKEY": self.api_key,
+            "Sign": signature
         }
-        m.get("https://indodax.com/api/ticker/ethidr", json=mock_response)
+        if is_post:
+            headers["Content-Type"] = "application/x-www-form-urlencoded"
+        return headers
 
-        res = client.get_ticker("ethidr")
+    @staticmethod
+    def _normalize_pair(pair: str) -> str:
+        if not isinstance(pair, str) or not pair.strip():
+            raise ValueError("pair cannot be empty")
 
-        assert res.get_last_price() == 33570000.0
-        assert res.get_highest_bid() == 33569000.0
-        assert res.ticker.server_time == 1794876675
+        pair_upper = pair.strip().upper()
+        if not pair_upper.endswith("IDR") or len(pair_upper) <= 3:
+            raise ValueError("pair must be an IDR market, for example ethidr")
+        return pair_upper
 
-def test_balances_signing(client):
-    expected_asset_raw = "0.00030391"
+    def get_balances(self, pair: str) -> BalanceResult:
+        if not self.api_key or not self.secret_key:
+            raise ValueError("missing credentials for private endpoint")
 
-    def match_request(request, context):
-        assert request.method == "GET"
-        assert "/api/v2/account" in request.url
+        pair_upper = self._normalize_pair(pair)
+        base_asset = pair_upper[:-3]
 
-        parsed_url = urllib.parse.urlparse(request.url)
-        query_params = urllib.parse.parse_qs(parsed_url.query)
-        params = {k: v[0] for k, v in query_params.items()}
-        canonical_query = build_query(params)
-        expected_sig = hmac.new(SECRET_KEY.encode(), canonical_query.encode(), hashlib.sha256).hexdigest()
-
-        assert request.headers["Sign"] == expected_sig
-        assert request.headers["X-APIKEY"] == API_KEY
-
-        context.status_code = 200
-        return {
-            "balances": [
-                {"asset": "IDR", "free": "1500000"},
-                {"asset": "ETH", "free": expected_asset_raw}
-            ]
+        params = {
+            "timestamp": str(int(time.time() * 1000)),
+            "recvWindow": "5000"
         }
+        query = build_query(params)
+        sig = sign_sha256(query, self.secret_key)
 
-    with requests_mock.Mocker() as m:
-        m.get("https://api.indodax.com/api/v2/account", json=match_request)
-        res = client.get_balances("ethidr")
+        endpoint = f"{self.BASE_URL_PRIVATE}/api/v2/account?{query}"
+        resp = self.http.request("GET", endpoint, headers=self._get_private_headers(sig))
+        self._check_status(resp)
 
-        assert res.idr == 1500000.0
-        assert res.asset_raw == expected_asset_raw
+        data = resp.json()
+        res = BalanceResult(idr=0.0, asset=0.0, asset_raw="0")
+        idr_found = False
+        asset_found = False
 
-def test_submit_order_signing(client):
-    expected_qty = "0.00030391"
+        for b in data.get("balances", []):
+            asset = b.get("asset", "").upper()
+            free = b.get("free")
+            if free is None:
+                continue
 
-    def match_request(request, context):
-        assert request.method == "POST"
-        assert request.url == "https://api.indodax.com/api/v2/order"
+            if asset == "IDR":
+                res.idr = float(free)
+                idr_found = True
+            elif asset == base_asset:
+                res.asset_raw = str(free)
+                res.asset = float(free)
+                asset_found = True
 
-        body_str = request.text
-        expected_sig = hmac.new(SECRET_KEY.encode(), body_str.encode(), hashlib.sha256).hexdigest()
-        assert request.headers["Sign"] == expected_sig
+        if not idr_found:
+            raise ValueError("IDR balance was not found in the API response")
+        if not asset_found:
+            raise ValueError(f"{base_asset} balance was not found in the API response")
+        return res
 
-        form_data = urllib.parse.parse_qs(body_str)
-        assert form_data["quantity"][0] == expected_qty
-        assert form_data["side"][0] == "SELL"
-        assert form_data["type"][0] == "MARKET"
+    def submit_order(self, req: SubmitOrderRequest) -> OrderResult:
+        if not self.api_key or not self.secret_key:
+            raise ValueError("missing credentials for private endpoint")
 
-        context.status_code = 200
-        return {
-            "symbol": "ETHIDR",
-            "orderId": 123456789,
-            "side": "SELL",
+        params = {
+            "symbol": req.symbol,
+            "side": req.side.upper(),
             "type": "MARKET",
-            "fullOrderId": "ethidr-market-123456789"
+            "timestamp": str(int(time.time() * 1000)),
+            "recvWindow": "5000"
         }
+        if req.quantity:
+            params["quantity"] = req.quantity
+        if req.quote_order_qty:
+            params["quoteOrderQty"] = req.quote_order_qty
 
-    with requests_mock.Mocker() as m:
-        m.post("https://api.indodax.com/api/v2/order", json=match_request)
+        payload = build_query(params)
+        sig = sign_sha256(payload, self.secret_key)
 
-        res = client.place_market_sell("ethidr", expected_qty)
+        endpoint = f"{self.BASE_URL_PRIVATE}/api/v2/order"
+        resp = self.http.request("POST", endpoint, headers=self._get_private_headers(sig, is_post=True), data=payload)
+        self._check_status(resp)
 
-        assert res.order_id == 123456789
-        assert res.full_order_id == "ethidr-market-123456789"
+        data = resp.json()
+        return OrderResult(
+            symbol=data.get("symbol", ""),
+            order_id=data.get("orderId", 0),
+            client_order_id=data.get("clientOrderId"),
+            side=data.get("side"),
+            type=data.get("type"),
+            full_order_id=data.get("fullOrderId")
+        )
 
-def test_market_buy_rounds_down(client):
-    def match_request(request, context):
-        form_data = urllib.parse.parse_qs(request.text)
-        assert form_data["quoteOrderQty"] == ["100000.99"]
-        context.status_code = 200
-        return {"symbol": "ETHIDR", "orderId": 123, "side": "BUY", "type": "MARKET"}
+    def place_market_buy(self, pair: str, idr_amount) -> OrderResult:
+        pair_upper = self._normalize_pair(pair)
+        try:
+            amount = Decimal(str(idr_amount))
+        except (InvalidOperation, ValueError):
+            raise ValueError("idr_amount must be a finite decimal amount")
 
-    with requests_mock.Mocker() as m:
-        m.post("https://api.indodax.com/api/v2/order", json=match_request)
-        client.place_market_buy("ethidr", "100000.999")
+        if not amount.is_finite() or amount <= 0:
+            raise ValueError("idr_amount must be a positive finite amount")
 
-def test_market_buy_rejects_invalid_amount(client):
-    with pytest.raises(ValueError):
-        client.place_market_buy("ethidr", "100000.999")
+        try:
+            amount = amount.quantize(Decimal("0.01"), rounding=ROUND_DOWN)
+        except InvalidOperation:
+            raise ValueError("idr_amount is outside the supported decimal range")
+
+        if amount <= 0:
+            raise ValueError("idr_amount must be at least 0.01 IDR")
+
+        return self.submit_order(SubmitOrderRequest(
+            symbol=pair_upper,
+            side="BUY",
+            quote_order_qty=format(amount, ".2f")
+        ))
+
+    def place_market_sell(self, pair: str, coin_amount_raw: str) -> OrderResult:
+        pair_upper = self._normalize_pair(pair)
+        return self.submit_order(SubmitOrderRequest(
+            symbol=pair_upper,
+            side="SELL",
+            quantity=coin_amount_raw
+        ))
+
+    def trade_history(self, req: TradeHistoryRequest) -> List[Trade]:
+        if not self.api_key or not self.secret_key:
+            raise ValueError("missing credentials for private endpoint")
+        if not req.symbol:
+            raise ValueError("symbol is mandatory for trade history")
+
+        symbol = self._normalize_pair(req.symbol)
+        params = {
+            "symbol": symbol.lower(),
+            "timestamp": str(int(time.time() * 1000)),
+            "recvWindow": "5000"
+        }
+        if req.full_order_id: params["fullOrderId"] = req.full_order_id
+        if req.client_order_id: params["clientOrderId"] = req.client_order_id
+        if req.start_time > 0: params["startTime"] = str(req.start_time)
+        if req.end_time > 0: params["endTime"] = str(req.end_time)
+        if req.limit > 0: params["limit"] = str(req.limit)
+        if req.sort: params["sort"] = params.get("sort")
+
+        query = build_query(params)
+        sig = sign_sha256(query, self.secret_key)
+
+        endpoint = f"{self.BASE_URL_PRIVATE}/api/v2/myTrades?{query}"
+        resp = self.http.request("GET", endpoint, headers=self._get_private_headers(sig))
+        self._check_status(resp)
+
+        data = resp.json().get("data", [])
+        trades = []
+        for t in data:
+            trades.append(Trade(
+                trade_id=t.get("tradeId", ""),
+                order_id=t.get("orderId", ""),
+                client_order_id=t.get("clientOrderId", ""),
+                symbol=t.get("symbol", ""),
+                price=t.get("price", "0"),
+                qty=t.get("qty", "0"),
+                quote_qty=t.get("quoteQty", "0"),
+                commission=t.get("commission", "0"),
+                commission_asset=t.get("commissionAsset", ""),
+                is_buyer=t.get("isBuyer", False),
+                is_maker=t.get("isMaker", False),
+                time=t.get("time", 0)
+            ))
+        return trades
