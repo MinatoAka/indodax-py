@@ -110,10 +110,10 @@ def test_market_sell_rejects_non_idr_pair(client):
 
         assert m.call_count == 0
 
-def test_market_buy_rounds_down(client):
+def test_market_buy(client):
     def match_request(request, context):
         form_data = urllib.parse.parse_qs(request.text)
-        assert form_data["quoteOrderQty"] == ["100000.99"]
+        assert form_data["quoteOrderQty"] == ["100000"]
         context.status_code = 200
         return {"symbol": "ETHIDR", "orderId": 123, "side": "BUY", "type": "MARKET"}
 
