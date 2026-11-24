@@ -8,9 +8,9 @@
 
 [![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
-[![Python CI](https://github.com/MinatoAka/indodax-py/actions/workflows/ci.yml/badge.svg?style=for-the-badge)](https://github.com/MinatoAka/indodax-py/actions/workflows/ci.yml)
 [![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen?style=for-the-badge)](https://github.com/MinatoAka/indodax-py/pulls)
 [![Saweria](https://img.shields.io/badge/Saweria-Support%20Me-FB6D26?style=for-the-badge)](https://saweria.co/AKaAturDompet)
+[![Python CI](https://github.com/MinatoAka/indodax-py/actions/workflows/ci.yml/badge.svg?style=for-the-badge)](https://github.com/MinatoAka/indodax-py/actions/workflows/ci.yml)
 
 </div>
 
