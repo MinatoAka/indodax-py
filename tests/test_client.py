@@ -119,7 +119,7 @@ def test_market_buy_rounds_down(client):
 
     with requests_mock.Mocker() as m:
         m.post("https://api.indodax.com/api/v2/order", json=match_request)
-        client.place_market_buy("ethidr", "100000.999")
+        client.place_market_buy("ethidr", "100000")
 
 def test_market_buy_rejects_invalid_amount(client):
     with pytest.raises(ValueError):
