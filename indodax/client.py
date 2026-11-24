@@ -4,7 +4,7 @@ from .private import PrivateAPI
 from .exceptions import IndodaxError
 
 class Client(PublicAPI, PrivateAPI):
-    def __init__(self, api_key: str = "", secret_key: str = "", retries: int = 3, rate_limit: int = 5, timeout: int = 15, user_agent: str = "indodax-py/1.0"):
+    def __init__(self, api_key: str = "", secret_key: str = "", retries: int = 3, rate_limit: int = 5, timeout: int = 15, user_agent: str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"):
         self.api_key = api_key
         self.secret_key = secret_key
         
