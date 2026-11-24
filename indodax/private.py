@@ -115,14 +115,14 @@ class PrivateAPI:
         if not amount.is_finite() or amount <= 0:
             raise ValueError("idr_amount must be a positive finite amount")
 
-        amount = amount.quantize(Decimal("0.01"), rounding=ROUND_DOWN)
-        if amount <= 0:
-            raise ValueError("idr_amount must be at least 0.01 IDR")
+        # Harus IDR bulat
+        if amount != amount.to_integral_value():
+            raise ValueError("quoteOrderQty must be a whole IDR amount")
 
         return self.submit_order(SubmitOrderRequest(
             symbol=pair_upper,
             side="BUY",
-            quote_order_qty=format(amount, ".2f")
+            quote_order_qty=str(int(amount))
         ))
 
     def place_market_sell(self, pair: str, coin_amount_raw: str) -> OrderResult:
