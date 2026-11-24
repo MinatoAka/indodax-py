@@ -103,7 +103,7 @@ class PrivateAPI:
             "timestamp": str(int(time.time() * 1000)),
             "recvWindow": "5000"
         }
-        if req.order_id: params["orderId"] = req.order_id
+        if req.full_order_id: params["fullOrderId"] = req.full_order_id
         if req.client_order_id: params["clientOrderId"] = req.client_order_id
         if req.start_time > 0: params["startTime"] = str(req.start_time)
         if req.end_time > 0: params["endTime"] = str(req.end_time)
