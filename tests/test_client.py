@@ -110,4 +110,4 @@ def test_market_buy_rounds_down(client):
 
 def test_market_buy_rejects_invalid_amount(client):
     with pytest.raises(ValueError):
-        client.place_market_buy("ethidr", "100000.999")
+        client.place_market_buy("ethidr", "0")
