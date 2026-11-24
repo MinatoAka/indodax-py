@@ -64,21 +64,24 @@ def test_balances_signing(client):
         assert res.idr == 1500000.0
         assert res.asset_raw == expected_asset_raw
 
-def test_submit_order_signing(client):
-    expected_qty = "0.00030391"
+def test_market_sell_signing_and_preserves_quantity_precision(client):
+    expected_qty = "0.00030391000000000001"
 
     def match_request(request, context):
         assert request.method == "POST"
         assert request.url == "https://api.indodax.com/api/v2/order"
+        assert request.headers["X-APIKEY"] == API_KEY
+        assert request.headers["Content-Type"] == "application/x-www-form-urlencoded"
 
         body_str = request.text
         expected_sig = hmac.new(SECRET_KEY.encode(), body_str.encode(), hashlib.sha256).hexdigest()
         assert request.headers["Sign"] == expected_sig
 
         form_data = urllib.parse.parse_qs(body_str)
-        assert form_data["quantity"][0] == expected_qty
-        assert form_data["side"][0] == "SELL"
-        assert form_data["type"][0] == "MARKET"
+        assert form_data["symbol"] == ["ETHIDR"]
+        assert form_data["quantity"] == [expected_qty]
+        assert form_data["side"] == ["SELL"]
+        assert form_data["type"] == ["MARKET"]
 
         context.status_code = 200
         return {
@@ -92,10 +95,20 @@ def test_submit_order_signing(client):
     with requests_mock.Mocker() as m:
         m.post("https://api.indodax.com/api/v2/order", json=match_request)
 
-        res = client.place_market_sell("ethidr", expected_qty)
+        res = client.place_market_sell(" ethidr ", expected_qty)
 
+        assert res.symbol == "ETHIDR"
         assert res.order_id == 123456789
+        assert res.side == "SELL"
+        assert res.type == "MARKET"
         assert res.full_order_id == "ethidr-market-123456789"
+
+def test_market_sell_rejects_non_idr_pair(client):
+    with requests_mock.Mocker() as m:
+        with pytest.raises(ValueError, match="pair must be an IDR market"):
+            client.place_market_sell("ethbtc", "0.01")
+
+        assert m.call_count == 0
 
 def test_market_buy_rounds_down(client):
     def match_request(request, context):
