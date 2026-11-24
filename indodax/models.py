@@ -50,7 +50,7 @@ class TickerResponse:
 @dataclass
 class TradeHistoryRequest:
     symbol: str
-    order_id: str = ""
+    full_order_id: str = ""
     client_order_id: str = ""
     start_time: int = 0
     end_time: int = 0
