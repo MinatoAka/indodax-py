@@ -55,11 +55,10 @@ client = Client(
 # Get a ticker
 ticker = client.get_ticker("ethidr")
 
-print("Last:", ticker.ticker.last)
-print("Buy:", ticker.get_highest_bid())
-print("Sell:", ticker.get_lowest_ask())
-print("24h high:", ticker.get_day_high())
-print("24h low:", ticker.get_day_low())
+print("Price: 33570000", ticker.price)
+
+price = float(ticker.price)  # ← konversi to float
+print("Price: 33570000.0", price)
 
 # List available pairs
 pairs = client.get_pairs()
