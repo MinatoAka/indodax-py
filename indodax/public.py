@@ -7,15 +7,15 @@ class PublicAPI:
     BASE_URL_PUBLIC = "https://indodax.com"
 
     def get_ticker(self, pair: str) -> TickerResponse:
-    if not pair.strip():
-        raise ValueError("pair cannot be empty")
+        if not pair.strip():
+            raise ValueError("pair cannot be empty")
     
-    endpoint = f"{self.PrivateAPI.BASE_URL_PRIVATE}/api/v2/ticker/price?symbol={urllib.parse.quote(pair.lower())}"
-    resp = self.http.request("GET", endpoint)
-    self._check_status(resp)
+        endpoint = f"{self.PrivateAPI.BASE_URL_PRIVATE}/api/v2/ticker/price?symbol={urllib.parse.quote(pair.lower())}"
+        resp = self.http.request("GET", endpoint)
+        self._check_status(resp)
     
-    data = resp.json()
-    return TickerResponse(symbol=data["symbol"], price=data["price"])
+        data = resp.json()
+        return TickerResponse(symbol=data["symbol"], price=data["price"])
 
     def get_pairs(self) -> List[PairInfo]:
         endpoint = f"{self.BASE_URL_PUBLIC}/api/pairs"
