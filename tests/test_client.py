@@ -16,22 +16,19 @@ def client():
 def test_ticker_parsing(client):
     with requests_mock.Mocker() as m:
         mock_response = {
-            "ticker": {
-                "buy": "33569000",
-                "sell": "33571000",
-                "last": "33570000",
-                "high": "34157000",
-                "low": "32901000",
-                "server_time": 1794876675
-            }
+            "symbol": "ethidr",
+            "price": "33570000"
         }
-        m.get("https://indodax.com/api/ticker/ethidr", json=mock_response)
+        
+        m.get("https://api.indodax.com/api/v2/ticker/price?symbol=ethidr", json=mock_response)
 
         res = client.get_ticker("ethidr")
 
-        assert res.get_last_price() == 33570000.0
-        assert res.get_highest_bid() == 33569000.0
-        assert res.ticker.server_time == 1794876675
+        assert res.symbol == "ethidr"
+        
+        assert res.price == "33570000"
+        
+        assert float(res.price) == 33570000.0
 
 def test_balances_signing(client):
     expected_asset_raw = "0.00030391"
