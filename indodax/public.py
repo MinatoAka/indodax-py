@@ -1,6 +1,6 @@
 import urllib.parse
 from typing import List
-from .models import TickerResponse, TickerData, PairInfo
+from .models import TickerResponse, PairInfo
 from .private import PrivateAPI
 
 class PublicAPI:
