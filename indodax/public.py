@@ -1,6 +1,7 @@
 import urllib.parse
 from typing import List
 from .models import TickerResponse, TickerData, PairInfo
+from .private import PrivateAPI
 
 class PublicAPI:
     BASE_URL_PUBLIC = "https://indodax.com"
