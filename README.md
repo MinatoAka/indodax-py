@@ -6,6 +6,8 @@
 
 *High-precision, blazing fast, and built with safety-first architecture.*
 
+*Indonesian Exchange*
+
 [![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen?style=for-the-badge)](https://github.com/MinatoAka/indodax-py/pulls)
@@ -57,7 +59,7 @@ ticker = client.get_ticker("ethidr")
 
 print("Price: 33570000", ticker.price)
 
-price = float(ticker.price)  # ← konversi to float
+price = float(ticker.price)  # ← convert to float
 print("Price: 33570000.0", price)
 
 # List available pairs
