@@ -10,7 +10,7 @@ class PublicAPI:
         if not pair.strip():
             raise ValueError("pair cannot be empty")
         
-        endpoint = f"{self.BASE_URL_PUBLIC}/api/ticker/{urllib.parse.quote(pair.lower())}"
+        endpoint = f"{self.PrivateAPI.BASE_URL_PRIVATE}/api/v2/ticker/price?symbol={urllib.parse.quote(pair.lower())}"
         resp = self.http.request("GET", endpoint)
         self._check_status(resp)
         
