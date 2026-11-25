@@ -29,23 +29,9 @@ class PairInfo:
     min_qty: float
 
 @dataclass
-class TickerData:
-    buy: str
-    sell: str
-    last: str
-    high: str
-    low: str
-    server_time: int
-
-@dataclass
 class TickerResponse:
-    ticker: TickerData
-
-    def get_last_price(self) -> float: return float(self.ticker.last)
-    def get_highest_bid(self) -> float: return float(self.ticker.buy)
-    def get_lowest_ask(self) -> float: return float(self.ticker.sell)
-    def get_day_high(self) -> float: return float(self.ticker.high)
-    def get_day_low(self) -> float: return float(self.ticker.low)
+    symbol: str
+    price:  str
 
 @dataclass
 class TradeHistoryRequest:
